@@ -2,7 +2,7 @@
 
 Triage any GitHub PR in under a second for ~$0.0001 — a typed decision model judge for PRs, not a chatbot reviewer.
 
-<!-- demo gif placeholder: terminal recording of `jev-gate <PR-URL>` → asciinema/vhs, <10s, dark theme -->
+![Real output of jev-gate triaging a live blocked PR](docs/demo.gif)
 
 ```
 $ jev-gate https://github.com/microsoft/winget-pkgs/pull/431811
