@@ -26,7 +26,7 @@ def capture():
     r = subprocess.run([sys.executable, str(REPO / "jev_gate.py"), PR],
                        capture_output=True, text=True, timeout=120)
     out = r.stdout.strip().splitlines()
-    assert any("certificate" in l for l in out), "verdict signal missing from real output"
+    assert any("certificate" in ln for ln in out), "verdict signal missing from real output"
     return out
 
 
@@ -39,13 +39,13 @@ def render(lines):
     d.rounded_rectangle([PAD, PAD, WIDTH - PAD, PAD + LINE_H], 6, fill=(33, 38, 45))
     d.text((PAD + 10, PAD + 3), "jev-gate — typed decision model for PRs", font=font, fill=DIM)
     y = PAD + LINE_H + 8
-    for l in lines:
+    for ln in lines:
         color = FG
-        if "NOT READY" in l or "certificate" in l:
+        if "NOT READY" in ln or "certificate" in ln:
             color = ACCENT
-        elif "$" in l or "cost" in l:
-            color = GREEN if "cost" in l else FG
-        d.text((PAD + 10, y), l, font=font, fill=color)
+        elif "$" in ln or "cost" in ln:
+            color = GREEN if "cost" in ln else FG
+        d.text((PAD + 10, y), ln, font=font, fill=color)
         y += LINE_H
     return img
 
