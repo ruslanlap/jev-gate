@@ -101,6 +101,22 @@ $ jev-gate --self-check   # offline validation sanity check
 self-check OK
 ```
 
+## Benchmark
+
+39 closed PRs from 4 public repos (winget-pkgs, cpython, next.js, CmdPal-Definition), ground truth = merged/closed-unmerged, model saw a pre-final timeline snapshot only (state scrubbed to `open`, events after cutoff removed — no leakage). Full methodology and data: [docs/benchmark.md](docs/benchmark.md), [docs/benchmark-data.json](docs/benchmark-data.json).
+
+| metric | value |
+|---|---|
+| accuracy (ready vs blocked) | 16/39 = 41.0% |
+| baseline (always "blocked") | 22/39 = 56.4% |
+| precision / recall (ready) | 100% (3/3) / 11.5% (3/26) |
+| confusion (TP/FP/TN/FN) | 3 / 0 / 13 / 23 |
+| mean confidence correct vs wrong | 0.88 vs 0.79 |
+| latency p50 / p90 | 0.38 s / 0.47 s |
+| cost | $0.000055 per PR |
+
+Interpretation: read as a readiness **predictor** on pre-final snapshots, the tool fails (41% < always-blocked baseline 56%). Read as a **gate**, the profile is the useful half: FP = 0 — it never once green-lit a rejected PR. Several FN are correct statements about the snapshot moment (a standing `changes_requested` review, merged only days later). Use it as a cheap "anything visibly blocking right now" check, not a merge oracle. Limits of this evidence: n=39 (±15 pp CI), label = final state not a moderator diagnosis, mixed sample. Full honesty section in [docs/benchmark.md](docs/benchmark.md).
+
 ## License
 
 MIT
