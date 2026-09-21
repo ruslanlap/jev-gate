@@ -6,6 +6,8 @@ Zero dependencies beyond Python stdlib.
 
 Usage:
   jev-gate <PR-URL>            # e.g. jev-gate https://github.com/owner/repo/pull/123
+  jev-gate --markdown <URL>    # one-line verdict for comments/CI
+  jev-gate --batch <URL> ...   # triage many PRs, sorted table
   jev-gate --self-check        # offline sanity check of validation logic
 
 Exit codes: 0 = merge-ready, 1 = blocked, 2 = error.
@@ -115,10 +117,10 @@ def build_state(pr, reviews, comments):
         f"Title: {pr['title']}",
         f"Author: {pr['user']['login']}",
         f"State: {pr['state']} mergeable={pr.get('mergeable')}",
-        f"Changes: +{pr.get('additions')}/-{pr.get('deletions')} in {pr.get('changed_files')} files",
-        "",
-        "Timeline:",
     ]
+    if pr.get("additions") is not None:
+        lines.insert(-1, f"Changes: +{pr['additions']}/-{pr['deletions']} in {pr['changed_files']} files")
+    lines += ["", "Timeline:"]
     events = []
     for r in reviews:
         body = f" — {r['body'][:400]}" if r.get("body") else ""
@@ -237,16 +239,74 @@ def report(label, answers, usage, latency, model):
     return "\n".join(out), ready
 
 
+def to_markdown(label, answers, usage, latency, model):
+    """One-line verdict for comments/CI summaries."""
+    ready = answers["merge_ready"]["noul"] >= 0.5
+    b, n = answers["primary_blocker"], answers["next_action"]
+    emoji = "✅" if ready else "🚫"
+    return (
+        f"**{emoji} jev-gate: {'MERGE-READY' if ready else 'NOT READY'}** "
+        f"(readiness {answers['readiness']['score']:.1f}/3 · blocker `{b['choice']}` conf {b['confidence']:.2f} · "
+        f"next `{n['choice']}` conf {n['confidence']:.2f}) · {latency}s · ${usage.get('cost', 0):.6f} · `{model}`"
+    )
+
+
+def triage(url):
+    """fetch → ask → validate → report. Returns (label, answers, res)."""
+    label, state = fetch_pr(url)
+    res = ask_jev(state)
+    answers = validate(res.get("answers", {}))
+    return label, answers, res
+
+
+def run_batch(urls):
+    """Triage many PRs; print a sorted table. Exit 0 if all parse, else 2."""
+    rows, errors = [], []
+    for u in urls:
+        try:
+            label, answers, res = triage(u)
+        except (RuntimeError, ValueError) as e:
+            errors.append((u, str(e)))
+            continue
+        rows.append({
+            "pr": label,
+            "ready": answers["merge_ready"]["noul"] >= 0.5,
+            "blocker": answers["primary_blocker"]["choice"],
+            "conf": answers["primary_blocker"]["confidence"],
+            "next": answers["next_action"]["choice"],
+            "score": answers["readiness"]["score"],
+        })
+    rows.sort(key=lambda r: (r["ready"], -r["conf"]))
+    print(f"{'PR':44} {'VERDICT':10} {'BLOCKER':18} {'CONF':>4}  NEXT")
+    for r in rows:
+        print(f"{r['pr']:44} {'READY' if r['ready'] else 'BLOCKED':10} {r['blocker']:18} "
+              f"{r['conf']:4.2f}  {r['next']}")
+    for u, e in errors:
+        print(f"error  {u}: {e}", file=sys.stderr)
+    return 0 if not errors else 2
+
+
 def main(argv):
     if not argv or argv[0] in ("-h", "--help"):
         print(__doc__)
         return 2
     if argv[0] == "--self-check":
         return self_check()
+    if argv[0] == "--markdown":
+        try:
+            label, answers, res = triage(argv[1])
+            print(to_markdown(label, answers, res.get("usage", {}), res.get("_latency_s", "?"), res.get("model", MODEL)))
+            return 0
+        except (RuntimeError, ValueError) as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 2
+    if argv[0] == "--batch":
+        if len(argv) < 2:
+            print("usage: jev-gate --batch <url> [url ...]", file=sys.stderr)
+            return 2
+        return run_batch(argv[1:])
     try:
-        label, state = fetch_pr(argv[0])
-        res = ask_jev(state)
-        answers = validate(res.get("answers", {}))
+        label, answers, res = triage(argv[0])
         text, ready = report(label, answers, res.get("usage", {}), res.get("_latency_s", "?"), res.get("model", MODEL))
         print(text)
         return 0 if ready else 1

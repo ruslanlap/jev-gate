@@ -1,0 +1,39 @@
+name: "jev-gate PR triage"
+description: "Triage every opened PR with a typed decision model — sub-second, ~$0.0001 per PR. Posts a verdict comment and applies blocked/ready labels."
+branding:
+  icon: "check-circle"
+  color: "blue"
+inputs:
+  openrouter-api-key:
+    description: "OpenRouter API key (Jev is available through it)"
+    required: true
+  github-token:
+    description: "Token for comments/labels (defaults to GITHUB_TOKEN)"
+    required: false
+    default: ${{ github.token }}
+  label:
+    description: "Also apply a label with the verdict (blocked/ready)"
+    required: false
+    default: "true"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      env:
+        OPENROUTER_API_KEY: ${{ inputs.openrouter-api-key }}
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR_URL: ${{ github.event.pull_request.html_url }}
+        WANT_LABEL: ${{ inputs.label }}
+      run: |
+        # ponytail: single-file download, no checkout of the whole repo needed
+        curl -fsSL https://raw.githubusercontent.com/ruslanlap/jev-gate/main/jev_gate.py \
+          -o /tmp/jev_gate.py
+        MD=$(python3 /tmp/jev_gate.py --markdown "$PR_URL") || exit 0
+        gh pr comment "$PR_URL" --body "$MD
+        <sub>typed decision model · [jev-gate](https://github.com/ruslanlap/jev-gate)</sub>"
+        if [ "$WANT_LABEL" = "true" ]; then
+          case "$MD" in
+            *MERGE-READY*) gh pr edit "$PR_URL" --add-label "jev:ready" 2>/dev/null || true ;;
+            *)             gh pr edit "$PR_URL" --add-label "jev:blocked" 2>/dev/null || true ;;
+          esac
+        fi

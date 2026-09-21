@@ -36,6 +36,23 @@ pipx install git+https://github.com/ruslanlap/jev-gate
 
 Unauthenticated GitHub API works (60 req/h); set `GH_TOKEN` for more.
 
+## GitHub Action
+
+Post a verdict comment and apply `jev:blocked` / `jev:ready` labels on every opened PR:
+
+```yaml
+on: [pull_request_target]
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: ruslanlap/jev-gate@main
+        with:
+          openrouter-api-key: ${{ secrets.OPENROUTER_API_KEY }}
+```
+
+One secret, no checkout, ~1s and ~$0.0001 per PR. CLI forms: `--markdown <url>` (one-line verdict for comments/CI) and `--batch <url>...` (sorted table for backlogs).
+
 ## How it works
 
 ```
