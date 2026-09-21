@@ -1,0 +1,42 @@
+[
+ {
+  "id": 5152919969,
+  "node_id": "PRR_kwDOC8Ivn88AAAABMyNRoQ",
+  "user": {
+   "login": "KarbitsCode",
+   "id": 107671693,
+   "node_id": "U_kgDOBmrwjQ",
+   "avatar_url": "https://avatars.githubusercontent.com/u/107671693?v=4",
+   "gravatar_id": "",
+   "url": "https://api.github.com/users/KarbitsCode",
+   "html_url": "https://github.com/KarbitsCode",
+   "followers_url": "https://api.github.com/users/KarbitsCode/followers",
+   "following_url": "https://api.github.com/users/KarbitsCode/following{/other_user}",
+   "gists_url": "https://api.github.com/users/KarbitsCode/gists{/gist_id}",
+   "starred_url": "https://api.github.com/users/KarbitsCode/starred{/owner}{/repo}",
+   "subscriptions_url": "https://api.github.com/users/KarbitsCode/subscriptions",
+   "organizations_url": "https://api.github.com/users/KarbitsCode/orgs",
+   "repos_url": "https://api.github.com/users/KarbitsCode/repos",
+   "events_url": "https://api.github.com/users/KarbitsCode/events{/privacy}",
+   "received_events_url": "https://api.github.com/users/KarbitsCode/received_events",
+   "type": "User",
+   "user_view_type": "public",
+   "site_admin": false
+  },
+  "body": "",
+  "state": "CHANGES_REQUESTED",
+  "html_url": "https://github.com/microsoft/winget-pkgs/pull/431811#pullrequestreview-5152919969",
+  "pull_request_url": "https://api.github.com/repos/microsoft/winget-pkgs/pulls/431811",
+  "author_association": "CONTRIBUTOR",
+  "_links": {
+   "html": {
+    "href": "https://github.com/microsoft/winget-pkgs/pull/431811#pullrequestreview-5152919969"
+   },
+   "pull_request": {
+    "href": "https://api.github.com/repos/microsoft/winget-pkgs/pulls/431811"
+   }
+  },
+  "submitted_at": "2026-09-09T10:21:02Z",
+  "commit_id": "2b97703a560552ec39ee2e8cd1d0bf1cfa5fcbfd"
+ }
+]

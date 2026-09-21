@@ -1,0 +1,65 @@
+{
+ "model": "typesafe/jev-1.13-20260917",
+ "answers": {
+  "merge_ready": {
+   "type": "noul",
+   "noul": 0.02
+  },
+  "primary_blocker": {
+   "type": "choice",
+   "choice": "certificate",
+   "probabilities": {
+    "certificate": 1,
+    "cla": 0,
+    "none": 0,
+    "other": 0,
+    "changes_requested": 0,
+    "validation": 0
+   },
+   "confidence": 0.99
+  },
+  "cla_blocking": {
+   "type": "noul",
+   "noul": 0.23
+  },
+  "readiness": {
+   "type": "score",
+   "score": 0.37,
+   "legend": {
+    "0": "blocked",
+    "1": "needs work",
+    "2": "nearly ready",
+    "3": "merge ready"
+   },
+   "probabilities": {
+    "0": 0.65,
+    "1": 0.34,
+    "2": 0.01,
+    "3": 0
+   },
+   "confidence": 0.63
+  },
+  "next_action": {
+   "type": "choice",
+   "choice": "resign_installer",
+   "probabilities": {
+    "close": 0,
+    "fix_manifest": 0.01,
+    "merge": 0,
+    "resign_installer": 0.96,
+    "comment": 0.02,
+    "address_review": 0.01,
+    "wait_ci": 0
+   },
+   "confidence": 0.95
+  }
+ },
+ "usage": {
+  "input_tokens": 3395,
+  "output_tokens": 186,
+  "cost": 0.00014259
+ },
+ "id": "gen-dec-1790012680-z2ajjY63gxC3WaQa1ORi",
+ "provider": "TypeSafe",
+ "_latency_s": 0.38
+}
