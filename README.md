@@ -117,6 +117,19 @@ self-check OK
 
 Interpretation: read as a readiness **predictor** on pre-final snapshots, the tool fails (41% < always-blocked baseline 56%). Read as a **gate**, the profile is the useful half: FP = 0 — it never once green-lit a rejected PR. Several FN are correct statements about the snapshot moment (a standing `changes_requested` review, merged only days later). Use it as a cheap "anything visibly blocking right now" check, not a merge oracle. Limits of this evidence: n=39 (±15 pp CI), label = final state not a moderator diagnosis, mixed sample. Full honesty section in [docs/benchmark.md](docs/benchmark.md).
 
+## Independent validation of the judge
+
+LangChain benchmarked the same decision model as an **agent-eval judge** (a different task than PR triage) against GPT-5.6 Luna, GPT-5.6 Terra and Claude Sonnet 4.6 — 5 frozen agent runs, 100 repetitions each, scored against human-oracle labels ([LangChain write-up](https://x.com/LangChain/article/2101454284927959080), [code and data](https://github.com/danielgshea/jev-as-a-judge)):
+
+| judge | pass/fail agreement with oracle | mean score variance | cost/call | latency |
+|---|---:|---:|---:|---:|
+| typed decision model | 100.0% | 0.0000149 | $0.00035 | 0.44 s |
+| GPT-5.6 Terra | 99.8% | 913× higher | $0.00289 | 2.83 s |
+| GPT-5.6 Luna | 96.4% | 433× higher | $0.00039 | 2.50 s |
+| Claude Sonnet 4.6 | 80.0% | 92× higher | $0.02811 | 2.16 s |
+
+Why it matters here: a judge whose answers barely move between identical inputs is what makes a cheap gate usable — the same property this tool depends on. What it does **not** give this repo: those numbers are someone else's task and a 5-run corpus with one human reviewer, so they are evidence for the direction, not a score `jev-gate` inherits. Every number above about `jev-gate` itself comes from the benchmark in the previous section.
+
 ## License
 
 MIT
