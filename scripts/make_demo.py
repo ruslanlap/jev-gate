@@ -30,33 +30,41 @@ def capture():
     return out
 
 
-def render(lines):
+def render_frames(lines):
+    """One frame per output line — looks like the command typing itself out."""
     font = ImageFont.truetype(FONT_PATH, FONT_SIZE)
     height = PAD * 2 + LINE_H * (len(lines) + 1)
-    img = Image.new("RGB", (WIDTH, height), BG)
-    d = ImageDraw.Draw(img)
-    # title bar
-    d.rounded_rectangle([PAD, PAD, WIDTH - PAD, PAD + LINE_H], 6, fill=(33, 38, 45))
-    d.text((PAD + 10, PAD + 3), "jev-gate — typed decision model for PRs", font=font, fill=DIM)
-    y = PAD + LINE_H + 8
-    for ln in lines:
-        color = FG
-        if "NOT READY" in ln or "certificate" in ln:
-            color = ACCENT
-        elif "$" in ln or "cost" in ln:
-            color = GREEN if "cost" in ln else FG
-        d.text((PAD + 10, y), ln, font=font, fill=color)
-        y += LINE_H
-    return img
+    frames = []
+    for n in range(1, len(lines) + 1):
+        img = Image.new("RGB", (WIDTH, height), BG)
+        d = ImageDraw.Draw(img)
+        # title bar
+        d.rounded_rectangle([PAD, PAD, WIDTH - PAD, PAD + LINE_H], 6, fill=(33, 38, 45))
+        d.text((PAD + 10, PAD + 3), "jev-gate — typed decision model for PRs", font=font, fill=DIM)
+        y = PAD + LINE_H + 8
+        for ln in lines[:n]:
+            color = FG
+            if "NOT READY" in ln or "certificate" in ln:
+                color = ACCENT
+            elif "$" in ln or "cost" in ln:
+                color = GREEN if "cost" in ln else FG
+            d.text((PAD + 10, y), ln, font=font, fill=color)
+            y += LINE_H
+        frames.append(img.quantize(colors=32))
+    return frames
 
 
 def main():
     lines = ["$ jev-gate " + PR] + capture()
-    img = render(lines)
+    frames = render_frames(lines)
     out = REPO / "docs" / "demo.gif"
-    out.parent.mkdir(exist_ok=True)
-    img.save(out)  # single-frame gif: quiet, honest, tiny
-    print(f"{out} ({out.stat().st_size} bytes, {img.size[0]}x{img.size[1]})")
+    # hold the final verdict frame long enough to read
+    durations = [110] * (len(frames) - 1) + [2500]
+    frames[0].save(out, save_all=True, append_images=frames[1:], duration=durations, loop=0, optimize=True)
+
+    check = Image.open(out)
+    assert getattr(check, "n_frames", 1) > 1, "demo.gif must be animated"
+    print(f"{out} ({out.stat().st_size} bytes, {frames[0].size[0]}x{frames[0].size[1]}, {check.n_frames} frames)")
 
 
 if __name__ == "__main__":
